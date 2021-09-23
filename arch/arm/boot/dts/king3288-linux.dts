@@ -1,0 +1,232 @@
+#include "rk3288-evb-act8846.dtsi"
+
+
+//#include "rp-lcd-hdmi.dtsi"
+// #include "rp-lcd-mipi-5-720-1280.dtsi"
+//#include "rp-lcd-mipi-7-800-1280.dtsi"
+//#include "rp-lcd-mipi-10-1920-1200.dtsi"
+#include "rp-lcd-edp-13.3-1920-1080.dtsi"
+//#include "rp-lcd-lvds-10-1024-600.dtsi"
+//#include "rp-lcd-lvds-21.5-1920-1080.dtsi"
+//#include "rp-lcd-lvds-10-1280-800.dtsi"
+//#include "rp-lcd-mipi-10-800-1280.dtsi"
+
+//#include "rp-lcd-lvds-21.5-1920-1080.dtsi"
+
+/ {
+	compatible = "rockchip,king-rp3288-act8846", "rockchip,rk3288";
+
+        33v_power_en {
+                compatible = "33v_en";
+                33ven_pin =  <&gpio6 6  1>;
+                5ven_pin =   <&gpio6 5  1>;
+                5ven_pin_2 = <&gpio6 7  1>;
+                fan_pin =    <&gpio7 21 1>;
+                hub_rst =    <&gpio5 13 1>;
+                rp_not_deep_leep = <0>;
+                status = "okay";
+        };
+
+
+        led_gpio{
+                compatible = "led_gpio";
+                status = "okay";
+                led_gpio =<&gpio4 27 0>;
+        };
+
+
+        rp_gpio{
+                status = "okay";
+                compatible = "rp_gpio";
+                base_value = <0>;
+                gpio1 {
+                        gpio_num = <&gpio5 16 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio2 {
+                        gpio_num = <&gpio8 3 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio3 {
+                        gpio_num = <&gpio7 4 GPIO_ACTIVE_LOW>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio4 {
+                        gpio_num = <&gpio5 17 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+
+                gpio5 {
+                        gpio_num = <&gpio5 11 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+
+                gpio6 {
+                        gpio_num = <&gpio5 10 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+
+                gpio7 {
+                        gpio_num = <&gpio0 11 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+
+                gpio8 {
+                        gpio_num = <&gpio5 12 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+
+        };
+
+
+        es8323-sound {
+                status = "okay";
+                compatible = "simple-audio-card";
+                simple-audio-card,format = "i2s";
+                simple-audio-card,name = "es8323-codec";
+                simple-audio-card,mclk-fs = <512>;
+                simple-audio-card,widgets =
+                        "Microphone", "Microphone Jack",
+                        "Headphone", "Headphone Jack";
+                simple-audio-card,routing =
+                        "MIC1", "Microphone Jack",
+                        "MIC2", "Microphone Jack",
+                        "Microphone Jack", "micbias1",
+                        "Headphone Jack", "HPOL",
+                        "Headphone Jack", "HPOR";
+
+                simple-audio-card,cpu {
+                        sound-dai = <&i2s>;
+                };
+                simple-audio-card,codec {
+                        sound-dai = <&es8323>;
+                };
+        };
+
+   	rt5640-sound {
+                status = "okay";
+                compatible = "simple-audio-card";
+                simple-audio-card,format = "i2s";
+                simple-audio-card,name = "rockchip,rt5640-codec";
+                simple-audio-card,mclk-fs = <512>;
+                simple-audio-card,widgets =
+                        "Microphone", "Microphone Jack",
+                        "Headphone", "Headphone Jack";
+                simple-audio-card,routing =
+                        "MIC1", "Microphone Jack",
+                        "MIC2", "Microphone Jack",
+                        "Microphone Jack", "micbias1",
+                        "Headphone Jack", "HPOL",
+                        "Headphone Jack", "HPOR";
+
+                simple-audio-card,dai-link@0 {
+                        format = "i2s";
+                        cpu {
+                                sound-dai = <&i2s>;
+                        };
+
+                        codec {
+                                sound-dai = <&rt5640>;
+                        };
+                };
+
+                simple-audio-card,dai-link@1 {
+                        format = "i2s";
+                        cpu {
+                                sound-dai = <&i2s>;
+                        };
+
+                        codec {
+                                sound-dai = <&hdmi>;
+                        };
+                };
+        };
+};
+
+
+
+&i2c1 {
+        status = "okay";
+
+        bma223: bma223@18{
+                status = "okay";
+                compatible = "gs_bma223";
+                reg = <0x18>;
+                type = <2>;
+                irq-gpio = <&gpio8 0 IRQ_TYPE_EDGE_RISING>;
+                irq_enable = <0>;
+                poll_delay_ms = <200>;
+                layout = <8>;
+        };
+
+};
+
+&i2c2 {
+        status = "okay";
+	
+	max17047@36 {
+		status = "okay";
+                compatible = "maxim,max17047";
+                reg = <0x36>;
+                charge-detect-gpio = <&gpio7 13 GPIO_ACTIVE_HIGH>;
+                battery-full-detect-gpio = <&gpio7 12 GPIO_ACTIVE_HIGH>;
+         };
+        es8323: es8323@10 {
+                compatible = "everest,es8323";
+                reg = <0x10>;
+                hp-det-gpio = <&gpio5 19 GPIO_ACTIVE_HIGH>;
+                spk-con-gpio = <&gpio5 18 GPIO_ACTIVE_HIGH>;
+                clock-names = "mclk";
+                clocks = <&cru SCLK_I2S0_OUT>;
+                #sound-dai-cells = <0>;
+        };
+
+        rt5640: rt5640@1c {
+                #sound-dai-cells = <0>;
+                compatible = "realtek,rt5640";
+                reg = <0x1c>;
+                clocks = <&cru SCLK_I2S0_OUT>;
+                clock-names = "mclk";
+                interrupt-parent = <&gpio6>;
+                interrupts = <7 IRQ_TYPE_EDGE_FALLING>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&i2s0_mclk>;
+        };
+};
+
+
+
+
+&uart1 {
+	status = "okay";
+};
+
+&uart3 {
+	status = "okay";
+};
+
+&uart4 {
+	status = "okay";
+};
+
+&spi1 {
+	status = "disabled";
+};
+
+

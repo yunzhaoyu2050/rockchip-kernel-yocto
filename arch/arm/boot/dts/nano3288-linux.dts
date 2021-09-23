@@ -1,0 +1,150 @@
+#include "rk3288-evb-rk808-linux.dtsi"
+
+//#include "rp-lcd-hdmi.dtsi"
+//#include "rp-lcd-mipi-5-720-1280-nano.dtsi"
+//#include "rp-lcd-mipi-5.5-720-1280.dtsi"
+//#include "rp-lcd-mipi-7-1200-1920.dtsi"
+//#include "rp-lcd-mipi-8-800-1280.dtsi"
+//#include "rp-lcd-mipi-10-800-1280.dtsi"
+//#include "rp-lcd-edp-13.3-1920-1080.dtsi"
+//#include "rp-lcd-lvds-10-1024-600-nano.dtsi"
+//#include "rp-lcd-lvds-21.5-1920-1080.dtsi"
+
+#include "rp-lcd-lvds-21.5-1920-1080.dtsi"
+
+/ {
+	compatible = "rockchip,nano3288-rk808", "rockchip,rk3288";
+
+        33v_power_en {
+                compatible = "33v_en";
+                33ven_pin =  <&gpio3 14  1>;
+                5ven_pin =   <&gpio3 15  1>;
+               fan_pin =    <&gpio0 12 1>;	//usb otg enable
+                hub_rst =    <&gpio5 18 1>;
+                rp_not_deep_leep = <1>;
+                status = "okay";
+        };
+
+        rp_gpio{
+                status = "okay";
+                compatible = "rp_gpio";
+                base_value = <0>;
+                gpio1 {
+                        gpio_num = <&gpio8 6 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio2 {
+                        gpio_num = <&gpio8 7 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio3 {
+                        gpio_num = <&gpio8 8 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio4 {
+                        gpio_num = <&gpio8 9 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+
+        };
+
+        /* This turns on USB vbus for both host0 (ehci) and host1 (dwc2) */
+        vcc_host: vcc-host-regulator {
+                compatible = "regulator-fixed";
+                enable-active-high;
+                gpio = <&gpio5 17 GPIO_ACTIVE_HIGH>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&host_vbus_drv>;
+                regulator-name = "vcc_host";
+                regulator-always-on;
+                regulator-boot-on;
+        };	
+
+        rt5640-sound {
+                status = "okay";
+                compatible = "simple-audio-card";
+                simple-audio-card,format = "i2s";
+                simple-audio-card,name = "rockchip,rt5640-codec";
+                simple-audio-card,mclk-fs = <256>;	//512
+
+                simple-audio-card,widgets =
+                        "Microphone", "Mic Jack",
+                        "Headphone", "Headphone Jack",
+                        "Speaker", "Speaker";
+                simple-audio-card,routing =
+                        "Mic Jack", "MICBIAS1",
+                        "IN1P", "Mic Jack",
+                        "Headphone Jack", "HPOL",
+                        "Headphone Jack", "HPOR",
+                        "Speaker", "SPOLP",
+                        "Speaker", "SPOLN",
+                        "Speaker", "SPORP",
+                        "Speaker", "SPORN";
+
+
+                simple-audio-card,dai-link@0 {
+                        format = "i2s";
+                        cpu {
+                                sound-dai = <&i2s>;
+                        };
+
+                        codec {
+                                sound-dai = <&rt5640>;
+                        };
+                };
+        };
+
+};
+
+&i2c2 {
+        status = "okay";
+
+        rt5640: rt5640@1c {
+                #sound-dai-cells = <0>;
+                compatible = "realtek,rt5640";
+                reg = <0x1c>;
+                clocks = <&cru SCLK_I2S0_OUT>;
+                clock-names = "mclk";
+                pinctrl-names = "default";
+                pinctrl-0 = <&i2s0_mclk>;
+		io-channels = <&saradc 4>;
+                hp-det-adc-value = <500>;
+		realtek,in1-differential;
+        };
+};
+
+
+&uart1 {
+	status = "okay";	
+};
+
+&uart3 {
+        status = "okay";
+};
+
+&uart4 {
+        status = "okay";
+};
+
+&usb_otg {
+        status = "okay";
+        dr_mode = "host";
+};
+
+&pinctrl {
+        usb {
+                host_vbus_drv: host-vbus-drv {
+                        rockchip,pins = <5 17 RK_FUNC_GPIO &pcfg_pull_none>;
+                };
+	};
+};
+
+

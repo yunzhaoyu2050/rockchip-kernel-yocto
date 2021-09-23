@@ -1,0 +1,203 @@
+#include "rk3288-evb-act8846.dtsi"
+
+//#include "rp-lcd-hdmi.dtsi"
+//#include "rp-lcd-mipi-5-720-1280.dtsi"
+//#include "rp-lcd-mipi-7-800-1280.dtsi"
+//#include "rp-lcd-mipi-10-1920-1200.dtsi"
+//#include "rp-lcd-edp-13.3-1920-1080.dtsi"
+//#include "rp-lcd-lvds-10-1024-600.dtsi"
+//#include "rp-lcd-lvds-21.5-1920-1080-pro.dtsi"
+
+
+
+#include "rp-lcd-lvds-21.5-1920-1080-pro.dtsi"
+
+/ {
+	compatible = "rockchip,pro3288-act8846", "rockchip,rk3288";
+
+        33v_power_en {
+                compatible = "33v_en";
+                33ven_pin =  <&gpio6 6  1>;
+                5ven_pin =   <&gpio6 5  1>;
+                5ven_pin_2 = <&gpio6 7  1>; 
+                fan_pin =    <&gpio7 21 1>;
+                hub_rst =    <&gpio5 13 1>;
+                rp_not_deep_leep = <0>;
+                status = "okay";
+        };
+
+
+        led_gpio{
+                compatible = "led_gpio";
+                status = "okay";
+                led_gpio =<&gpio4 27 0>;
+        };
+
+
+        rp_gpio{
+                status = "okay";
+                compatible = "rp_gpio";
+                base_value = <0>;
+                gpio1 {
+                        gpio_num = <&gpio0 1 GPIO_ACTIVE_HIGH>;		
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio2 {
+                        gpio_num = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio3 {
+                        gpio_num = <&gpio0 6 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>;  
+                };
+                gpio4 {
+                        gpio_num = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+
+                gpio5 {
+                        gpio_num = <&gpio0 11 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+
+                gpio6 {
+                        gpio_num = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+                        gpio_function = <0>;            //0:output 1:input
+                        //gpio_event = <KEY_F14>;
+                        //send_mode = <0>; 
+                };
+        };
+
+        /* This turns on USB vbus for both host0 (ehci) and host1 (dwc2) */
+        vcc_host: vcc-host-regulator {
+                compatible = "regulator-fixed";
+                enable-active-high;
+                gpio = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&host_vbus_drv>;
+                regulator-name = "vcc_host";
+                regulator-always-on;
+                regulator-boot-on;
+        };
+
+
+   	rt5640-sound {
+                status = "okay";
+                compatible = "simple-audio-card";
+                simple-audio-card,format = "i2s";
+                simple-audio-card,name = "rockchip,rt5640-codec";
+                simple-audio-card,mclk-fs = <256>;
+
+                simple-audio-card,widgets =
+                        "Microphone", "Mic Jack",
+                        "Headphone", "Headphone Jack",
+                        "Speaker", "Speaker";
+                simple-audio-card,routing =
+                        "Mic Jack", "MICBIAS1",
+                        "IN1P", "Mic Jack",
+                        "Headphone Jack", "HPOL",
+                        "Headphone Jack", "HPOR",
+                        "Speaker", "SPOLP",
+                        "Speaker", "SPOLN",
+                        "Speaker", "SPORP",
+                        "Speaker", "SPORN";
+                simple-audio-card,dai-link@0 {
+                        format = "i2s";
+                        cpu {
+                                sound-dai = <&i2s>;
+                        };
+
+                        codec {
+                                sound-dai = <&rt5640>;
+                        };
+                };
+	};
+
+
+};
+
+
+
+&i2c1 {
+        status = "okay";
+
+        bma223: bma223@18{
+                status = "okay";
+                compatible = "gs_bma223";
+                reg = <0x18>;
+                type = <2>;
+                irq-gpio = <&gpio8 0 IRQ_TYPE_EDGE_RISING>;
+                irq_enable = <0>;
+                poll_delay_ms = <200>;
+                layout = <8>;
+        };
+
+};
+
+&i2c2 {
+        status = "okay";
+
+        rt5640: rt5640@1c {
+                #sound-dai-cells = <0>;
+                compatible = "realtek,rt5640";
+                reg = <0x1c>;
+                clocks = <&cru SCLK_I2S0_OUT>;
+                clock-names = "mclk";
+                pinctrl-names = "default";
+                pinctrl-0 = <&i2s0_mclk>;
+		io-channels = <&saradc 4>;
+                hp-det-adc-value = <500>;
+		realtek,in1-differential;
+        };
+};
+
+&usb_otg {
+        status = "okay";
+        dr_mode = "host";
+};
+
+
+&uart1 {
+	status = "okay";
+};
+
+&uart3 {
+	status = "okay";
+};
+
+&uart4 {
+	status = "okay";
+};
+
+&pinctrl {
+        usb {
+                host_vbus_drv: host-vbus-drv {
+                        rockchip,pins = <0 12 RK_FUNC_GPIO &pcfg_pull_none>;
+                };
+        };
+		/////for pro3288 reelectrify cannot display
+	pwr_5v {
+			pwr_en: pwr-en {
+				rockchip,pins = <6 5 RK_FUNC_GPIO &pcfg_pull_up>,
+						<6 6 RK_FUNC_GPIO &pcfg_pull_up>;
+			};
+	};
+};
+
+&dsi0 {
+              /////for pro3288 reelectrify cannot display
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwr_en>;
+};
+
+
